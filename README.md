@@ -1,7 +1,7 @@
 # SlippiDataAnalyzer
 Created for the purpose of analyzing data and creating useful graphs to show results such as win/loss, kills/deaths ratios based on characters played in Super Smash Bros. Melee
 
-#How to Use:
+# How to Use:
 1. If you already have python installed, skip to step 2. If you don't, you need to get it. Download it here You may also need NodeJS installed, but I don't believe so.
 
 2. Open command prompt, enter pip install pandas matplotlib py-slippi, these are required python modules which it uses to function
