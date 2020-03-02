@@ -99,8 +99,6 @@ async function runScript(arg){
     return await spawn('python', [
         "-u",
         __dirname + "/python/slippigameanalyzer.py",
-        // "C:/Users/Noah/Documents/Programming/electronapp/release-builds/Slippi-Game-Analyzer-win32-ia32/resources/app/python/slippigameanalyzer.py",
-        // "C:/Users/Noah/AppData/Local/Programs/Python/Python37-32/slippitest.py",
         arg
     ]);
 }
