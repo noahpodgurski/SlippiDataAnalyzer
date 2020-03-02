@@ -1,0 +1,184 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <title>Slippi Data Analyzer</title>
+        <!-- Font Awesome -->
+        <link rel="stylesheet" href="./assets/css/all.css">
+        <!-- Bootstrap core CSS -->
+        <link href="./assets/css/bootstrap.min.css" rel="stylesheet">
+        <!-- Material Design Bootstrap -->
+        <link href="./assets/css/mdb.min.css" rel="stylesheet"> <title>heyo</title>
+       
+        <link rel="stylesheet" type="text/css" href="./assets/css/loading-bar.css"/>
+<style>
+body {
+    overflow: hidden;
+    -webkit-user-select: none;
+    -webkit-app-region: "drag";
+}
+.ldBar path.mainline {
+    stroke-width: 10;
+    /* stroke: #09f; */
+    /* stroke-linecap: round; */
+}
+/* .ldBar path.baseline {
+    stroke-width: 14;
+    stroke: #f1f2f3;
+    stroke-linecap: round;
+    filter:url(#custom-shadow);
+  } */
+</style>
+
+
+    </head>
+    <body style="display:flex; flex-direction: column; justify-content:center; min-height: 100%;">
+        <div style="height: 100vh;" class="row justify-content-center">
+            <div id="bod" style="height:100%;" class="col-12">
+                <div class="jumbotron card card-image" style="background-image: url(./assets/pics/background.png); height:100%;">
+                    <h2 class="card-title h1-responsive pt-3 mb-5 font-bold"><strong>Slp Data Analyzer</strong></h2>
+                    <h4 class="mx-5 mb-5">Please select the folder containing ONLY and all your .slp file replays, enter your username, and hit submit. </h4>
+                    <!-- <a class="btn btn-outline-white btn-md"><i class="fas fa-clone left"></i> View project</a> -->
+                        <!-- <div class="text-white text-center py-5 px-4">
+                        </div> -->
+                    <div class="row justify-content-center">
+                        <div class="col-2">
+                            <button id="party" class="btn btn-dark btn-md">Choose Folder</button>
+                        </div>
+                        <div  class="col-8 justify-content-center">
+                            <!-- Default input -->
+                            <!-- <label for="exampleForm2">Default input</label> -->
+                            <input style="width: 100%; margin-top:15px;" class="" type="text" id="userName" class="form-control" placeholder="Enter your netplay username">
+                            <!-- <input id="userName" name=username style="width: 100%;" type="text" placeholder="Enter your netplay username"> -->
+                        </div>
+                        
+                        <div class="col-2">
+                            <!-- <input id="business" type="file" style="display: none" accept=".slp" multiple/> -->
+                            <button id="submitBtn" class="btn btn-danger btn-md">Submit</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+            
+
+
+
+
+<!-- JQuery -->
+<script type="text/javascript" src="./assets/js/jquery.min.js"></script>
+<!-- Bootstrap tooltips -->
+<script type="text/javascript" src="./assets/js/popper.min.js"></script>
+<!-- Bootstrap core JavaScript -->
+<script type="text/javascript" src="./assets/js/bootstrap.min.js"></script>
+<!-- MDB core JavaScript -->
+<script type="text/javascript" src="./assets/js/mdb.min.js"></script>
+
+
+<script type="text/javascript" src="./assets/js/loading-bar.js"></script>
+
+
+
+<script>
+    window.$ = window.jQuery = require('jQuery');
+    const electron = require('electron')
+    const {ipcRenderer} = electron;
+    // const {dialog} = electron;
+
+    function setupStuff(){
+        document.getElementById('party').addEventListener('click', _ => {
+            // console.log("clicked!")
+            // document.getElementById('business').click()
+            // opendialog!
+            ipcRenderer.send("openDialog");
+        })
+        
+        document.getElementById("submitBtn").addEventListener("click", function(e){
+            e.preventDefault();
+            var item;
+            item = document.getElementById("userName").value
+            // item[1] = document.getElementById("business").files
+            // console.log(item);
+            if (item == ""){
+                $("#userName").attr("placeholder", "ENTER YOUR USERNAME HERE");
+                return;
+            }
+            // Send data to js file, and analyze
+            ipcRenderer.send("run", item);
+
+            // change program to show loading bars
+            loadingBar("Extracting Ports from games...");
+        });
+    
+        var bar1;
+        var type = "ports";
+        function loadingBar(text){
+            $("#bod").html("")
+            $("#bod").addClass("justify-content-center");
+            $("#bod").append("<div id='jumby' class='jumbotron card card-image' style='background-image: url(./assets/pics/background.png); height:100%;'><div class='row justify-content-center'><h3>"+text+"</h3></div><div class='row justify-content-center'><div id='myItem1' data-preset='energy'></div></div></div>");
+            bar1 = new ldBar("#myItem1")
+            var bar2 = $("#myItem1").ldBar;
+            // bar1.set(0);
+        }
+
+        ipcRenderer.on("loadingPort", function(e, val){
+            bar1.set(Math.ceil(val*100));
+            if (Math.ceil(val*100) == 100){
+                // console.log("we reached 100")
+                bar1 = null;
+                loadingBar("Performing analysis on .slp files")
+                $("#jumby").append("<p class='mt-4' id='warningShot'>If nothing shows up here after 10 seconds, it probably means the username you entered is invalid, restart the program and try again with a different name.</p>")
+            }
+        })
+
+        ipcRenderer.on("loading", function(e, val){
+            // console.log(Math.ceil(val*100));
+            bar1.set(Math.ceil(val*100))
+            // if (type == "ports"){
+            //     if (Math.ceil(val*100) == 100){
+            //         type = "analysis";
+            //         // console.log("we reached 100")
+            //         bar1 = null;
+            //         loadingBar("Performing analysis on .slp files")
+            //         $("#jumby").append("<p class='mt-4' id='warningShot'>If nothing shows up here after 10 seconds, it probably means the username you entered is invalid, restart the program and try again with a different name.</p>")
+            //     }
+            // }
+        })
+
+        ipcRenderer.on("data", function(e, values){
+            if ($("#stats").length == 0){
+                $("#jumby").append('<div class="mt-4 row justify-content-center">Fun Stats:<span id="stats"></span></div>')
+                
+            }
+            $("#warningShot").remove();
+            $("#stats").html("<br>Games analyzed: " + values[6] + " (out of " + values[8] + ")"  + "<br>Corrupt Files: " + values[7] + "<br>Total Wins: " + values[0] + "<br>Total Losses: " + values[1] + "<br>Total Kills: " + values[2] + "<br>Total Deaths: " + values[3] + "<br>Total Four Stocks: " + values[4] + "<br>Total Four Stocks Received: " + values[5])
+        })
+
+        ipcRenderer.on("selectAPath", function(e){
+            resetPage();
+            // $("#jumby").find("h3").text("Please select a valid path (containing only .slp files)")
+        })
+
+        ipcRenderer.on("done", function(e){
+            $("#bod").html("")
+            $("#bod").addClass("justify-content-center");
+            $("#bod").append("<div id='jumby' class='jumbotron card card-image' style='background-image: url(./assets/pics/background.png); height:100%;'><div class='row justify-content-center'><h3>Analysis Complete</h3></div><div class='row justify-content-center'><div id='myItem1' data-preset='energy'></div></div></div>");
+            
+        })
+    }
+
+    function resetPage(){
+        $("body").html('<body style="display:flex; flex-direction: column; justify-content:center; min-height: 100%;"><div style="height: 100vh;" class="row justify-content-center"><div id="bod" style="height:100%;" class="col-12"><div class="jumbotron card card-image" style="background-image: url(./assets/pics/background.png); height:100%;"><h2 class="card-title h1-responsive pt-3 mb-5 font-bold"><strong>Slippi Data Analyzer</strong></h2><h4 class="mx-5 mb-5">Please select the folder containing ONLY and all your .slp file replays, enter your username, and hit submit.</h4><div class="row justify-content-center"><div class="col-2"> <button id="party" class="btn btn-dark btn-md">Choose Folder</button></div><div class="col-8 justify-content-center"> <input style="width: 100%; margin-top:15px;" class="" type="text" id="userName" class="form-control" placeholder="Enter your netplay username"></div><div class="col-2"> <button id="submitBtn" class="btn btn-danger btn-md">Submit</button></div></div></div></div></div>')
+        setupStuff();
+    }
+
+    setupStuff();
+
+    </script>
+
+
+
+
+    </body>
+</html>
